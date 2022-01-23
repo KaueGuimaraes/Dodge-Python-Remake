@@ -3,6 +3,10 @@ import pygame
 
 from random import randint
 
+
+gros = 2
+
+
 class Enemy():
     def __init__(self, WIDTH, HEIGHT, min_w, max_w, min_h, max_h, min_speed, max_speed, min_damage, max_damage):
         self.w = randint(min_w, max_w)
@@ -37,7 +41,7 @@ class Enemy():
             self.y = randint(0, HEIGHT - self.h)
         
 
-        self.MY_FONT = pygame.font.SysFont('Comic Sans MS', 30)
+        self.MY_FONT = pygame.font.SysFont('Comic Sans MS', self.getHeight())
 
 
         self.dire = []
@@ -70,13 +74,14 @@ class Enemy():
     
     def render(self, screen):
         pygame.draw.rect(screen, self.color, (self.getX(), self.getY(), self.getWidth(), self.getHeight()))
+        pygame.draw.rect(screen, (0, 0, 0), (self.getX() + (gros / 2), self.getY() + (gros / 2), self.getWidth() - gros, self.getHeight() - gros))
 
         if self.type == 0:
             textsurface = self.MY_FONT.render('0', False, (255, 255, 255))
         elif self.type == 1:
             textsurface = self.MY_FONT.render('1', False, (255, 255, 255))
         
-        screen.blit(textsurface, (self.getX() + (self.getWidth() / 3), self.getY() + (self.getHeight() / 3)))
+        screen.blit(textsurface, (self.getX() + (self.getWidth() / 3), self.getY()))
 
     #Get
     def getX(self):
@@ -96,6 +101,9 @@ class Enemy():
     
     def getDamage(self):
         return self.damage
+    
+    def getType(self):
+        return self.type
     #
     #Set
     def setX(self, newX):
