@@ -11,9 +11,11 @@ import entities.player as p
 import entities.enemy as e
 import entities.text as t
 import entities.health as h
+from game_over import Game_over
 
 
 import pause as ps
+import game_over as go
 
 
 #Color
@@ -22,6 +24,7 @@ color = dict()
 color = {
     'white' : (255, 255, 255),
     'red' : (255, 0, 0),
+    'violet' : (221,160,221),
 }
 #
 
@@ -35,12 +38,27 @@ enemys = []
 texts = []
 healths = []
 
+fps = 30
+
 running = True
 class Game():
     def __init__(self):
         self.is_paused = False
         self.pause_cont = 5
         self.last_pause_cont = 0
+
+        self.is_game_over = False
+
+        self.is_status = False
+        self.status_cont = 5
+        self.last_status_cont = 0
+        self.show_status = []
+
+        self.time_cont = 0
+        self.time = 0
+        
+        
+        self.max_healths = 10
         
         pygame.init()
 
@@ -49,14 +67,27 @@ class Game():
         pygame.display.set_caption('Name')
 
         self.pauser = ps.setup(self.screen)
+        self.game_over = go.setup(self.screen, fps)
 
-        self.player = p.setup(300 * SCALE, 300 * SCALE, 25 * SCALE, 25 * SCALE, 10.6 * SCALE, 50) # x, y, width, height, speed, life
+        self.player = p.setup(300 * SCALE, 300 * SCALE, 15 * SCALE, 15 * SCALE, 10.6 * SCALE, 50) # x, y, width, height, speed, life
+
+        self.new_game = False
 
         print('Hello, World!')
     
     def main(self):
-        self.clock.tick(30)
+        self.clock.tick(fps)
         self.screen.fill((0, 0, 0))
+
+        #Restart game
+        if self.new_game:
+            game = Game()
+
+            self.clear()
+
+            while True:
+                game.main()
+        #
 
         self.tick()
         self.render()
@@ -72,10 +103,19 @@ class Game():
 
         if self.is_paused:
             self.pauser.tick()
+        elif self.is_game_over:
+            self.game_over.tick()
         else:
+            #Timer
+            self.time_cont += 1
+            if self.time_cont >= fps:
+                self.time += 1
+                self.time_cont = 0
+            #
+            
             if self.player.getLife() <= 0:
+                self.is_game_over = True
                 #self.quit()
-                print('morte')
 
             #Enemys
             if randint(0, 100) <= 30:
@@ -98,8 +138,9 @@ class Game():
                 cont += 1
             #
             #Healths
-            if randint(0, 100) <= 10:
-                healths.append(h.setup(25 * SCALE, 25 * SCALE, 3, 10, self.screen))
+            if len(healths) < self.max_healths:
+                if randint(0, 100) <= 3:
+                    healths.append(h.setup(25 * SCALE, 25 * SCALE, 3, 10, self.screen))
             
             cont = 0
             for c in healths:
@@ -128,39 +169,129 @@ class Game():
         '''for c in range(0, self.player.getLife()):
             pygame.draw.rect(self.screen, color['red'], (10+(c*35) * SCALE, 10 * SCALE, 25 * SCALE, 25 * SCALE))'''
         
-        if self.is_paused:
-            self.pauser.render()
-        
-        for c in enemys:
-            c.render(self.screen)
-        for c in healths:
-            c.render(self.screen)
-        self.player.render(self.screen)
-        for c in texts:
-            c.render(self.screen)
+        if self.is_game_over:
+            self.game_over.render()
+        else:
+            for c in enemys:
+                c.render(self.screen)
+            for c in healths:
+                c.render(self.screen)
+            self.player.render(self.screen)
+            for c in texts:
+                c.render(self.screen)
+            
+            if self.is_paused:
+                self.pauser.render()
+            else:
+                #Timer
+                self.MY_FONT = pygame.font.SysFont('Comic Sans MS', 20)
+                self.screen.blit(self.MY_FONT.render('Timer : ' + str(self.time), False, color['red']), (10, 20))
+                #
+
+            
+            if self.is_status:
+                self.status()
 
     def key_listener(self):
-        self.pause_cont += 1
-        if pygame.key.get_pressed()[K_ESCAPE]:
-            if self.pause_cont > self.last_pause_cont:
-                print('esc')
+        #Game over
+        if self.is_game_over:
+            if pygame.key.get_pressed()[K_SPACE]:
+                #Restart game
+                game = Game()
+                self.clear()
                 
-                if self.is_paused:
-                    self.is_paused = False
-                else:
-                    self.is_paused = True
-                self.last_pause_cont = self.pause_cont + 5
-        
-        if self.is_paused == False:
-            if pygame.key.get_pressed()[K_w]:
-                self.player.up()
-            if pygame.key.get_pressed()[K_s]:
-                self.player.down()
-            if pygame.key.get_pressed()[K_d]:
-                self.player.right()
-            if pygame.key.get_pressed()[K_a]:
-                self.player.left()
+                while True:
+                    game.main()
+                #
+        #
+        #To pause
+        else:
+            self.pause_cont += 1
+            if pygame.key.get_pressed()[K_ESCAPE]:
+                if self.pause_cont > self.last_pause_cont:
+                    print('esc')
+                    
+                    if self.is_paused:
+                        self.is_paused = False
+                    else:
+                        self.is_paused = True
+                    self.last_pause_cont = self.pause_cont + 5
+            #
+            #To Status
+            self.status_cont += 1
+            if pygame.key.get_pressed()[K_F5]:
+                if self.status_cont > self.last_status_cont:
+                    print('status')
+                    
+                    if self.is_status:
+                        self.is_status = False
+                    else:
+                        self.is_status = True
+                    self.last_status_cont = self.status_cont + 5
+            #
+            if self.is_paused == False:
+                if pygame.key.get_pressed()[K_w]:
+                    self.player.up()
+                if pygame.key.get_pressed()[K_s]:
+                    self.player.down()
+                if pygame.key.get_pressed()[K_d]:
+                    self.player.right()
+                if pygame.key.get_pressed()[K_a]:
+                    self.player.left()
+            else:
+                #is_paused = True
+                if pygame.key.get_pressed()[K_RETURN]:
+                    if self.pauser.get_menu()[self.pauser.get_choiche()].lower() == 'resume':
+                        self.is_paused = False
+                        print('resume')
+                    elif self.pauser.get_menu()[self.pauser.get_choiche()].lower() == 'restart':
+                        self.new_game = True
+                        print('restart')
+                    elif self.pauser.get_menu()[self.pauser.get_choiche()].lower() == 'quit':
+                        print('quit')
+                        self.quit()
+                #
     
+    def status(self):
+        self.MY_FONT = pygame.font.SysFont('Comic Sans MS', 30) #Font
+        self.screen.blit(self.MY_FONT.render('STATS FOR NERDS', False, color['violet']), (10, 70))
+
+        self.show_status = []
+        self.show_status.append(['Enemys', len(enemys)]) #Enemys
+        self.show_status.append(['Healths', len(healths)]) #Healths
+        self.show_status.append(['Texts', len(texts)])
+
+        self.show_status.append(['', ''])
+
+        self.show_status.append(['Max Life', self.player.max_life])
+        self.show_status.append(['Life', self.player.getLife()])
+
+        self.show_status.append(['', ''])
+
+        self.show_status.append(['X', self.player.getX()])
+        self.show_status.append(['Y', self.player.getY()])
+
+        self.show_status.append(['', ''])
+
+        self.show_status.append(['Width', self.player.getWidth()])
+        self.show_status.append(['Height', self.player.getHeight()])
+
+        print(self.show_status)
+
+        self.MY_FONT = pygame.font.SysFont('Comic Sans MS', 20)
+        self.cont = 1
+        for c in self.show_status:
+            if c[0] == '':
+                self.screen.blit(self.MY_FONT.render('', False, color['violet']), (10, (30) + (30 * self.cont)))
+            else:
+                self.screen.blit(self.MY_FONT.render(c[0] + ' : ' + str(c[1]), False, color['violet']), (10, (100) + (25 * self.cont)))
+            self.cont += 1
+
+    def clear(self):
+        enemys.clear()
+        healths.clear()
+        texts.clear()
+
     def quit(self):
         pygame.quit()
         exit()

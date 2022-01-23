@@ -18,10 +18,10 @@ class Player():
             self.setLife(self.max_life)
     
     def render(self, screen):
-        pygame.draw.rect(screen, (255, 215, 0), (self.getX(), self.getY(), self.getWidth(), self.getHeight()))
+        pygame.draw.rect(screen, (255, 215, 0), (self.getX(), self.getY(), self.getWidth(), self.getHeight())) #Player
 
-        pygame.draw.rect(screen, (128, 128, 128), (5, 5, self.max_life * 3, 10))
-        pygame.draw.rect(screen, (255, 0, 0), (5, 5, self.getLife() * 3, 10))
+        pygame.draw.rect(screen, (128, 128, 128), (5, 5, self.max_life * 3, 10)) #Back life
+        pygame.draw.rect(screen, (255, 0, 0), (5, 5, self.getLife() * 3, 10)) #Life
 
     #Get
     def getX(self):
