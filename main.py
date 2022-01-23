@@ -13,6 +13,9 @@ import entities.text as t
 import entities.health as h
 
 
+import pause as ps
+
+
 #Color
 color = dict()
 
@@ -35,11 +38,17 @@ healths = []
 running = True
 class Game():
     def __init__(self):
+        self.is_paused = False
+        self.pause_cont = 5
+        self.last_pause_cont = 0
+        
         pygame.init()
 
         self.screen = pygame.display.set_mode((WIDTH * SCALE, HEIGHT * SCALE))
         self.clock = pygame.time.Clock()
         pygame.display.set_caption('Name')
+
+        self.pauser = ps.setup(self.screen)
 
         self.player = p.setup(300 * SCALE, 300 * SCALE, 25 * SCALE, 25 * SCALE, 10.6 * SCALE, 50) # x, y, width, height, speed, life
 
@@ -56,83 +65,101 @@ class Game():
     
     def tick(self):
         for event in pygame.event.get():
-            if event.type == QUIT:
-                self.quit()
+                if event.type == QUIT:
+                    self.quit()
         
         self.key_listener()
 
-        if self.player.getLife() <= 0:
-            #self.quit()
-            print('morte')
+        if self.is_paused:
+            self.pauser.tick()
+        else:
+            if self.player.getLife() <= 0:
+                #self.quit()
+                print('morte')
 
-        #Enemys
-        if randint(0, 100) <= 30:
-            enemys.append(e.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2))
-        
-        cont = 0
-        for c in enemys:
-            #Enemy collide
-            self.rect1 = pygame.Rect(c.getX(), c.getY(), c.getWidth(), c.getHeight())
-            self.rect2 = pygame.Rect(self.player.getX(), self.player.getY(), self.player.getWidth(), self.player.getHeight())
-            if pygame.Rect.colliderect(self.rect1, self.rect2):
-                self.player.setLife(self.player.getLife() - c.getDamage())
-                texts.append(t.setup(c.getX(), c.getY(), 10, 10, 10, 'Hit', c.getType()))
-                print(c.getX(), c.getY(), 10, 10, 4, 'Hit', c.getType())
-            #
-            if c.getX() < 0 or c.getY() < 0 or c.getX() > WIDTH or c.getY() > HEIGHT:
-                del(enemys[cont])
-            c.tick(self.screen)
+            #Enemys
+            if randint(0, 100) <= 30:
+                enemys.append(e.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2))
             
-            cont += 1
-        #
-        #Healths
-        if randint(0, 100) <= 10:
-            healths.append(h.setup(25 * SCALE, 25 * SCALE, 3, 10, self.screen))
-        
-        cont = 0
-        for c in healths:
-            self.rect1 = pygame.Rect(c.getX(), c.getY(), c.getWidth(), c.getHeight())
-            self.rect2 = pygame.Rect(self.player.getX(), self.player.getY(), self.player.getWidth(), self.player.getHeight())
-            #Health collide
-            if pygame.Rect.colliderect(self.rect1, self.rect2):
-                self.player.setLife(self.player.getLife() + c.getLife())
-                del(healths[cont])
+            cont = 0
+            for c in enemys:
+                #Enemy collide
+                self.rect1 = pygame.Rect(c.getX(), c.getY(), c.getWidth(), c.getHeight())
+                self.rect2 = pygame.Rect(self.player.getX(), self.player.getY(), self.player.getWidth(), self.player.getHeight())
+                if pygame.Rect.colliderect(self.rect1, self.rect2):
+                    self.player.setLife(self.player.getLife() - c.getDamage())
+                    texts.append(t.setup(c.getX(), c.getY(), 10, 10, 10, 'Hit', c.getType()))
+                    print(c.getX(), c.getY(), 10, 10, 4, 'Hit', c.getType())
+                #
+                if c.getX() < 0 or c.getY() < 0 or c.getX() > WIDTH or c.getY() > HEIGHT:
+                    del(enemys[cont])
+                c.tick(self.screen)
+                
+                cont += 1
             #
-            c.tick(self.screen)
-            cont += 1
-        #
-        #Texts
-        cont = 0
-        for c in texts:
-            c.tick(self.screen)
-            if c.leaveMap(self.screen):
-                del(texts[cont])
-            cont += 1
-        #
+            #Healths
+            if randint(0, 100) <= 10:
+                healths.append(h.setup(25 * SCALE, 25 * SCALE, 3, 10, self.screen))
+            
+            cont = 0
+            for c in healths:
+                self.rect1 = pygame.Rect(c.getX(), c.getY(), c.getWidth(), c.getHeight())
+                self.rect2 = pygame.Rect(self.player.getX(), self.player.getY(), self.player.getWidth(), self.player.getHeight())
+                #Health collide
+                if pygame.Rect.colliderect(self.rect1, self.rect2):
+                    self.player.setLife(self.player.getLife() + c.getLife())
+                    del(healths[cont])
+                #
+                c.tick(self.screen)
+                cont += 1
+            #
+            #Texts
+            cont = 0
+            for c in texts:
+                c.tick(self.screen)
+                if c.leaveMap(self.screen):
+                    del(texts[cont])
+                cont += 1
+            #
 
-        self.player.tick(self.screen)
+            self.player.tick(self.screen)
 
     def render(self):
         '''for c in range(0, self.player.getLife()):
             pygame.draw.rect(self.screen, color['red'], (10+(c*35) * SCALE, 10 * SCALE, 25 * SCALE, 25 * SCALE))'''
-
-        for c in texts:
-            c.render(self.screen)
+        
+        if self.is_paused:
+            self.pauser.render()
+        
         for c in enemys:
             c.render(self.screen)
         for c in healths:
             c.render(self.screen)
         self.player.render(self.screen)
+        for c in texts:
+            c.render(self.screen)
 
     def key_listener(self):
-        if pygame.key.get_pressed()[K_w]:
-            self.player.up()
-        if pygame.key.get_pressed()[K_s]:
-            self.player.down()
-        if pygame.key.get_pressed()[K_d]:
-            self.player.right()
-        if pygame.key.get_pressed()[K_a]:
-            self.player.left()
+        self.pause_cont += 1
+        if pygame.key.get_pressed()[K_ESCAPE]:
+            if self.pause_cont > self.last_pause_cont:
+                print('esc')
+                
+                if self.is_paused:
+                    self.is_paused = False
+                else:
+                    self.is_paused = True
+                self.last_pause_cont = self.pause_cont + 5
+        
+        if self.is_paused == False:
+            if pygame.key.get_pressed()[K_w]:
+                self.player.up()
+            if pygame.key.get_pressed()[K_s]:
+                self.player.down()
+            if pygame.key.get_pressed()[K_d]:
+                self.player.right()
+            if pygame.key.get_pressed()[K_a]:
+                self.player.left()
     
     def quit(self):
         pygame.quit()

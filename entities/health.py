@@ -16,7 +16,7 @@ class Health():
         self.life = randint(min_life, max_life)
     
     def tick(self, screen):
-        print()
+        self.cont = 0
     
     def render(self, screen):
         pygame.draw.rect(screen, (255, 255, 255), (self.getX(), self.getY(), self.getWidth(), self.getHeight()))
