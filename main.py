@@ -37,7 +37,7 @@ class Game():
         self.clock = pygame.time.Clock()
         pygame.display.set_caption('Name')
 
-        self.player = p.setup(300 * SCALE, 300 * SCALE, 25 * SCALE, 25 * SCALE, 5.3 * SCALE, 50) # x, y, width, height, speed, life
+        self.player = p.setup(300 * SCALE, 300 * SCALE, 25 * SCALE, 25 * SCALE, 10.6 * SCALE, 50) # x, y, width, height, speed, life
 
         print('Hello, World!')
     
