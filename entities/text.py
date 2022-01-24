@@ -26,6 +26,8 @@ class Text():
             textsurface = self.MY_FONT.render(self.text, False, (255, 0, 0))
         elif self.type == 1:
             textsurface = self.MY_FONT.render(self.text, False, (0, 128, 0))
+        elif self.type == 2:
+            textsurface = self.MY_FONT.render(self.text, False, (255, 215, 0))
         
         screen.blit(textsurface, (self.getX(), self.getY()))
 

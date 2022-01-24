@@ -8,10 +8,13 @@ from random import randint
 
 
 import entities.player as p
-import entities.enemy as e
 import entities.text as t
 import entities.health as h
-from game_over import Game_over
+
+
+import entities.enemys.enemy1 as e
+import entities.enemys.enemy2 as e2
+import entities.enemys.enemy3 as e3
 
 
 import pause as ps
@@ -39,6 +42,8 @@ texts = []
 healths = []
 
 fps = 30
+
+levels = ['easy', 'normal', 'hard', 'very hard', 'impossible']
 
 running = True
 class Game():
@@ -114,13 +119,20 @@ class Game():
             #
             
             if self.player.getLife() <= 0:
-                self.is_game_over = True
+                self.player.setLife(self.player.max_life)
+                #self.is_game_over = True
                 #self.quit()
 
             #Enemys
             if randint(0, 100) <= 30:
                 enemys.append(e.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2))
             
+            if randint(0, 100) <= 10:
+                enemys.append(e2.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2, 2))
+            
+            if randint(0, 100) <= 50:
+                enemys.append(e3.setup(WIDTH * SCALE, HEIGHT * SCALE, 30 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2, 2))
+            #
             cont = 0
             for c in enemys:
                 #Enemy collide
@@ -129,9 +141,8 @@ class Game():
                 if pygame.Rect.colliderect(self.rect1, self.rect2):
                     self.player.setLife(self.player.getLife() - c.getDamage())
                     texts.append(t.setup(c.getX(), c.getY(), 10, 10, 10, 'Hit', c.getType()))
-                    print(c.getX(), c.getY(), 10, 10, 4, 'Hit', c.getType())
                 #
-                if c.getX() < 0 or c.getY() < 0 or c.getX() > WIDTH or c.getY() > HEIGHT:
+                if c.kill(self.screen):
                     del(enemys[cont])
                 c.tick(self.screen)
                 
@@ -251,7 +262,10 @@ class Game():
                         print('quit')
                         self.quit()
                 #
-    
+
+    def get_player(self):
+        return self.player
+
     def status(self):
         self.MY_FONT = pygame.font.SysFont('Comic Sans MS', 30) #Font
         self.screen.blit(self.MY_FONT.render('STATS FOR NERDS', False, color['violet']), (10, 70))

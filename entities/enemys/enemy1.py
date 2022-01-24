@@ -121,6 +121,13 @@ class Enemy():
     def setSpeed(self, newSpeed):
         self.speed = newSpeed
     #
+
+    def kill(self, screen):
+        if self.getX() < 0 or self.getY() < 0 or self.getX() > screen.get_width() or self.getY() > screen.get_height():
+            return True
+        else:
+            return False
+
     #Move
     def goDire(self):
         if self.dire[0] == 'right':
