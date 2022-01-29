@@ -61,7 +61,10 @@ class Game():
 
         self.time_cont = 0
         self.time = 0
-        
+
+
+        self.fast_counter = 0
+
         
         self.max_healths = 10
         
@@ -112,6 +115,7 @@ class Game():
             self.game_over.tick()
         else:
             #Timer
+            self.fast_counter += 1
             self.time_cont += 1
             if self.time_cont >= fps:
                 self.time += 1
@@ -122,16 +126,26 @@ class Game():
                 self.player.setLife(self.player.max_life)
                 #self.is_game_over = True
                 #self.quit()
-
+            
             #Enemys
-            if randint(0, 100) <= 30:
-                enemys.append(e.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2))
-            
-            if randint(0, 100) <= 10:
-                enemys.append(e2.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2, 2))
-            
-            if randint(0, 100) <= 50:
-                enemys.append(e3.setup(WIDTH * SCALE, HEIGHT * SCALE, 30 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2, 2))
+            #Easy
+            if self.time >= 1 and self.time < 5:
+                if self.fast_counter == 1 * fps: # Se o tempo for exatamente 1 segundo
+                    texts.append(t.setup(10, (HEIGHT * SCALE) - 60, 10, 10, 10, 'Welcome', 0))
+                if self.fast_counter == 2 * fps:
+                    texts.append(t.setup(10, (HEIGHT * SCALE) - 60, 10, 10, 10, 'to', 0))
+                if self.fast_counter == 3 * fps:
+                    texts.append(t.setup(10, (HEIGHT * SCALE) - 60, 10, 10, 10, 'Dodge Remake', 0))
+            elif self.time >= 5:
+                if randint(0, 100) <= 15:
+                    enemys.append(e.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2))
+
+                '''if randint(0, 100) <= 10:
+                    enemys.append(e2.setup(WIDTH * SCALE, HEIGHT * SCALE, 10 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2, 2))
+                
+                if randint(0, 100) <= 50:
+                    enemys.append(e3.setup(WIDTH * SCALE, HEIGHT * SCALE, 30 * SCALE, 60 * SCALE, 10 * SCALE, 60 * SCALE, 5 * SCALE, 10 * SCALE, 1, 2, 2))'''
+            #
             #
             cont = 0
             for c in enemys:
